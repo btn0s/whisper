@@ -6,12 +6,14 @@ mod llm;
 mod paste;
 mod transcribe;
 
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
-    Emitter, Manager,
+    Emitter, Listener, Manager,
+    PhysicalPosition,
 };
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
@@ -83,7 +85,7 @@ fn main() {
                         if *shortcut == toggle_shortcut {
                             toggle_recording(app);
                         } else if *shortcut == escape_shortcut {
-                            stop_and_process(app);
+                            cancel_recording(app);
                         }
                     })
                     .build(),
@@ -91,6 +93,17 @@ fn main() {
 
             app.global_shortcut().register(toggle_shortcut)?;
             app.global_shortcut().register(escape_shortcut)?;
+
+            // Listen for frontend button events
+            let app_handle_cancel = app.handle().clone();
+            app.listen("cancel-recording", move |_| {
+                cancel_recording(&app_handle_cancel);
+            });
+
+            let app_handle_stop = app.handle().clone();
+            app.listen("stop-recording", move |_| {
+                stop_and_process(&app_handle_stop);
+            });
 
             eprintln!("[whispr] Ready. Option+Shift+Space to record, Escape to stop.");
 
@@ -115,13 +128,29 @@ fn toggle_recording(app: &tauri::AppHandle) {
             return;
         }
         *is_recording = true;
+        play_sound("dictation-start.wav");
         eprintln!("[whispr] Recording started");
 
         if let Some(window) = app.get_webview_window("overlay") {
+            // Position bottom-center of primary monitor
+            if let Some(monitor) = window.primary_monitor().ok().flatten() {
+                let screen = monitor.size();
+                let scale = monitor.scale_factor();
+                let win_w = (160.0 * scale) as i32;
+                let win_h = (40.0 * scale) as i32;
+                let x = (screen.width as i32 - win_w) / 2;
+                let y = screen.height as i32 - win_h - (60.0 * scale) as i32;
+                let _ = window.set_position(PhysicalPosition::new(x, y));
+            }
             let _ = window.show();
-            // Don't take focus — keep the user's app focused for paste
             let _ = app.emit("recording-state", "recording");
         }
+
+        // Audio level emitter for waveform UI
+        let app_handle_levels = app.clone();
+        std::thread::spawn(move || {
+            audio_level_loop(&app_handle_levels);
+        });
 
         // Live transcription: only transcribe the last ~5 seconds of audio
         let app_handle = app.clone();
@@ -129,6 +158,67 @@ fn toggle_recording(app: &tauri::AppHandle) {
         std::thread::spawn(move || {
             live_transcription_loop(&app_handle, &transcriber);
         });
+    }
+}
+
+fn sounds_dir() -> PathBuf {
+    // In dev: src-tauri/sounds/, in prod: bundled resource
+    let exe = std::env::current_exe().unwrap_or_default();
+    let dev_path = exe.parent().unwrap_or(std::path::Path::new("."))
+        .join("../../../src-tauri/sounds");
+    if dev_path.exists() {
+        return dev_path;
+    }
+    exe.parent().unwrap_or(std::path::Path::new(".")).join("sounds")
+}
+
+fn play_sound(name: &str) {
+    let path = sounds_dir().join(name);
+    if path.exists() {
+        std::thread::spawn(move || {
+            let _ = std::process::Command::new("afplay")
+                .arg(&path)
+                .spawn();
+        });
+    }
+}
+
+fn cancel_recording(app: &tauri::AppHandle) {
+    let state = app.state::<AppState>();
+    let state = state.inner();
+    let mut is_recording = state.is_recording.lock().unwrap();
+    if !*is_recording {
+        return;
+    }
+    *is_recording = false;
+    drop(is_recording);
+
+    let mut audio = state.audio.lock().unwrap();
+    audio.0.stop();
+    drop(audio);
+
+    play_sound("cancel.wav");
+    eprintln!("[whispr] Recording cancelled");
+    hide_overlay(app);
+}
+
+fn audio_level_loop(app: &tauri::AppHandle) {
+    loop {
+        std::thread::sleep(Duration::from_millis(50)); // 20fps
+
+        let state = app.state::<AppState>();
+        let state = state.inner();
+        let is_recording = state.is_recording.lock().unwrap();
+        if !*is_recording {
+            break;
+        }
+        drop(is_recording);
+
+        let audio = state.audio.lock().unwrap();
+        let levels = audio.0.levels();
+        drop(audio);
+
+        let _ = app.emit("audio-levels", &levels);
     }
 }
 
@@ -194,6 +284,7 @@ fn stop_and_process(app: &tauri::AppHandle) {
         *is_recording = false;
     }
 
+    play_sound("dictation-stop.wav");
     eprintln!("[whispr] Recording stopped, processing...");
     let _ = app.emit("recording-state", "processing");
 
@@ -242,6 +333,7 @@ fn stop_and_process(app: &tauri::AppHandle) {
         hide_overlay(&app_handle);
         tokio::time::sleep(Duration::from_millis(100)).await;
 
+        play_sound("paste.wav");
         if let Err(e) = paste::paste_text(&raw_text) {
             eprintln!("[whispr] Paste error: {}", e);
         }

@@ -84,11 +84,29 @@ impl AudioCapture {
 
     pub fn snapshot(&self) -> Vec<f32> {
         let raw = self.samples.lock().unwrap().clone();
-        let converted = convert_to_whisper_format(&raw, self.sample_rate, self.channels);
-        eprintln!("[audio] snapshot: {} raw samples -> {} whisper samples, max amplitude: {:.4}",
-            raw.len(), converted.len(),
-            converted.iter().map(|s| s.abs()).fold(0.0f32, f32::max));
-        converted
+        convert_to_whisper_format(&raw, self.sample_rate, self.channels)
+    }
+
+    /// Get recent audio levels for waveform visualization.
+    /// Returns 16 amplitude values (0.0-1.0) representing the last ~100ms of audio.
+    pub fn levels(&self) -> Vec<f32> {
+        let raw = self.samples.lock().unwrap();
+        let num_bars = 16;
+        // Use last ~4800 samples (~100ms at 48kHz)
+        let tail_size = (self.sample_rate as usize / 10).min(raw.len());
+        if tail_size < num_bars {
+            return vec![0.0; num_bars];
+        }
+        let tail = &raw[raw.len() - tail_size..];
+        let chunk_size = tail_size / num_bars;
+        tail.chunks(chunk_size)
+            .take(num_bars)
+            .map(|chunk| {
+                let rms = (chunk.iter().map(|s| s * s).sum::<f32>() / chunk.len() as f32).sqrt();
+                // Scale up aggressively for visibility
+                (rms * 50.0).min(1.0)
+            })
+            .collect()
     }
 }
 

@@ -2,33 +2,70 @@
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="overlay">
-    <div id="status">
-      <span id="indicator"></span>
-      <span id="status-text">Listening...</span>
-    </div>
-    <div id="transcript"></div>
+  <div id="pill">
+    <button id="cancel-btn" class="btn">
+      <svg viewBox="0 0 14 14"><line x1="3" y1="3" x2="11" y2="11"/><line x1="11" y1="3" x2="3" y2="11"/></svg>
+    </button>
+    <div id="waveform"></div>
+    <button id="stop-btn" class="btn">
+      <div class="stop-icon"></div>
+    </button>
   </div>
   <script>
-    const { listen } = window.__TAURI__.event;
+    const { listen, emit } = window.__TAURI__.event;
 
-    const transcript = document.getElementById('transcript');
-    const indicator = document.getElementById('indicator');
-    const statusText = document.getElementById('status-text');
+    const NUM_BARS = 10;
+    const waveform = document.getElementById('waveform');
 
-    listen('transcription-update', (event) => {
-      transcript.textContent = event.payload;
+    // Create bars
+    const bars = [];
+    for (let i = 0; i < NUM_BARS; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bar wave';
+
+      // Center bulge: bars in middle are taller
+      const distFromCenter = Math.abs(4.5 - i);
+      const heightScale = Math.max(0, 1 - Math.pow(distFromCenter, 2) * (1 / 48));
+      bar.style.setProperty('--bar-height-scale', heightScale);
+
+      // Staggered animation: center starts first, ripples outward
+      const delay = i < 5 ? 0.1 * i : 0.1 * (i - 10);
+      bar.style.animationDelay = `${delay}s`;
+
+      waveform.appendChild(bar);
+      bars.push(bar);
+    }
+
+    document.getElementById('cancel-btn').addEventListener('click', () => {
+      emit('cancel-recording');
+    });
+
+    document.getElementById('stop-btn').addEventListener('click', () => {
+      emit('stop-recording');
+    });
+
+    listen('audio-levels', (event) => {
+      const raw = event.payload;
+      // Compute overall audio energy
+      const avg = raw.reduce((a, b) => a + b, 0) / raw.length;
+      const audioScale = Math.max(1, 1 + avg * 12);
+
+      bars.forEach((bar) => {
+        bar.style.setProperty('--audio-scale', audioScale);
+      });
     });
 
     listen('recording-state', (event) => {
       const state = event.payload;
-      indicator.className = state;
-      if (state === 'recording') statusText.textContent = 'Listening...';
-      else if (state === 'processing') statusText.textContent = 'Processing...';
-      else statusText.textContent = '';
+      bars.forEach(bar => {
+        bar.classList.toggle('active', state === 'recording');
+        bar.classList.toggle('wave', state === 'recording');
+        bar.classList.toggle('processing', state === 'processing');
+      });
     });
   </script>
 </body>
