@@ -1,0 +1,61 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: hidden;
+}
+
+#overlay {
+  background: rgba(28, 28, 30, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #555;
+}
+
+#indicator.recording {
+  background: #ff3b30;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+#indicator.processing {
+  background: #ff9f0a;
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+#status-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+#transcript {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+  min-height: 1.5em;
+}

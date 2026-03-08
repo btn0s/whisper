@@ -1,0 +1,14 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities",
+  "windows": ["*"],
+  "permissions": [
+    "core:default",
+    "core:window:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister"
+  ]
+}
