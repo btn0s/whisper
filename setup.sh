@@ -22,11 +22,11 @@ if ! command -v ollama &> /dev/null; then
     echo ""
     echo "WARNING: Ollama is not installed."
     echo "Install it from https://ollama.com and then run:"
-    echo "  ollama pull qwen2.5:7b"
+    echo "  ollama pull qwen3.5:8b"
 else
     echo ""
     echo "Pulling Qwen model via Ollama..."
-    ollama pull qwen2.5:7b
+    ollama pull qwen3.5:8b
 fi
 
 echo ""
