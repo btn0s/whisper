@@ -8,8 +8,8 @@
     "beforeDevCommand": "",
     "frontendDist": "../src"
   },
-  "macOSPrivateApi": true,
   "app": {
+    "macOSPrivateApi": true,
     "withGlobalTauri": true,
     "windows": [
       {
