@@ -1,5 +1,8 @@
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 use std::path::Path;
+use std::sync::Once;
+
+static INIT_LOGGING: Once = Once::new();
 
 pub struct Transcriber {
     ctx: WhisperContext,
@@ -7,6 +10,11 @@ pub struct Transcriber {
 
 impl Transcriber {
     pub fn new(model_path: &str) -> Result<Self, Box<dyn std::error::Error>> {
+        // Suppress whisper.cpp verbose logging
+        INIT_LOGGING.call_once(|| {
+            whisper_rs::install_logging_hooks();
+        });
+
         if !Path::new(model_path).exists() {
             return Err(format!("Whisper model not found at: {}", model_path).into());
         }
@@ -28,6 +36,7 @@ impl Transcriber {
         params.set_print_special(false);
         params.set_print_realtime(false);
         params.set_print_timestamps(false);
+        params.set_debug_mode(false);
         params.set_no_context(true);
         params.set_single_segment(false);
 

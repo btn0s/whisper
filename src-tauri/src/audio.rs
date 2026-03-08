@@ -34,6 +34,13 @@ impl AudioCapture {
             .ok_or("No input device available")?;
 
         let config = device.default_input_config()?;
+        let sr = config.sample_rate().0;
+        let ch = config.channels();
+        let fmt = config.sample_format();
+        eprintln!("[audio] device: {}, rate: {}, channels: {}, format: {:?}",
+            device.name().unwrap_or_default(), sr, ch, fmt);
+        self.sample_rate = sr;
+        self.channels = ch;
 
         self.samples.lock().unwrap().clear();
 
@@ -77,7 +84,11 @@ impl AudioCapture {
 
     pub fn snapshot(&self) -> Vec<f32> {
         let raw = self.samples.lock().unwrap().clone();
-        convert_to_whisper_format(&raw, self.sample_rate, self.channels)
+        let converted = convert_to_whisper_format(&raw, self.sample_rate, self.channels);
+        eprintln!("[audio] snapshot: {} raw samples -> {} whisper samples, max amplitude: {:.4}",
+            raw.len(), converted.len(),
+            converted.iter().map(|s| s.abs()).fold(0.0f32, f32::max));
+        converted
     }
 }
 
