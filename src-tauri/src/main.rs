@@ -1,7 +1,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod audio;
+mod context;
+mod llm;
 mod paste;
+mod transcribe;
 
 fn main() {
     tauri::Builder::default()
