@@ -8,6 +8,7 @@
     "beforeDevCommand": "",
     "frontendDist": "../src"
   },
+  "macOSPrivateApi": true,
   "app": {
     "withGlobalTauri": true,
     "windows": [
@@ -40,7 +41,5 @@
       "icons/icon.ico"
     ]
   },
-  "plugins": {
-    "global-shortcut": {}
-  }
+  "plugins": {}
 }
