@@ -33,4 +33,4 @@ cargo tauri dev
 ## Config (env vars)
 
 - `WHISPR_MODEL` — Path to Whisper .bin model (default: `~/.whispr/ggml-base.en.bin`)
-- `WHISPR_LLM_MODEL` — Ollama model name (default: `qwen3.5:8b`)
+- `WHISPR_LLM_MODEL` — Ollama model name (default: `qwen3.5`)

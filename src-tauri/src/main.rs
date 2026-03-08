@@ -36,7 +36,7 @@ fn main() {
     });
 
     let qwen_model =
-        std::env::var("WHISPR_LLM_MODEL").unwrap_or_else(|_| "qwen3.5:8b".to_string());
+        std::env::var("WHISPR_LLM_MODEL").unwrap_or_else(|_| "qwen3.5".to_string());
 
     let transcriber = Arc::new(
         transcribe::Transcriber::new(&model_path).expect(
