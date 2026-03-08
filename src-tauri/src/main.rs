@@ -1,12 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-mod context;
 
 mod audio;
 mod context;
 mod llm;
 mod paste;
-mod transcribe;
-
 mod transcribe;
 
 fn main() {
