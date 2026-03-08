@@ -53,7 +53,7 @@ fn main() {
         is_recording: Mutex::new(false),
     };
 
-    let toggle_shortcut = Shortcut::new(Some(Modifiers::ALT | Modifiers::SHIFT), Code::Space);
+    let toggle_shortcut = Shortcut::new(Some(Modifiers::ALT), Code::Space);
     let escape_shortcut = Shortcut::new(None, Code::Escape);
 
     tauri::Builder::default()
@@ -105,7 +105,7 @@ fn main() {
                 stop_and_process(&app_handle_stop);
             });
 
-            eprintln!("[whispr] Ready. Option+Shift+Space to record, Escape to stop.");
+            eprintln!("[whispr] Ready. Option+Space to record, Escape to stop.");
 
             Ok(())
         })
