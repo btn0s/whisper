@@ -7,6 +7,8 @@ mod llm;
 mod paste;
 mod transcribe;
 
+mod transcribe;
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
