@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0a0a14"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00ff88"/>
+      <stop offset="100%" stop-color="#00cc66"/>
+    </linearGradient>
+    <filter id="termglow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <!-- Dark terminal background -->
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+
+  <!-- Subtle scan lines -->
+  <g opacity="0.06">
+    <line x1="80" y1="120" x2="944" y2="120" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="160" x2="944" y2="160" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="200" x2="944" y2="200" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="240" x2="944" y2="240" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="280" x2="944" y2="280" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="320" x2="944" y2="320" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="360" x2="944" y2="360" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="400" x2="944" y2="400" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="440" x2="944" y2="440" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="480" x2="944" y2="480" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="520" x2="944" y2="520" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="560" x2="944" y2="560" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="600" x2="944" y2="600" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="640" x2="944" y2="640" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="680" x2="944" y2="680" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="720" x2="944" y2="720" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="760" x2="944" y2="760" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="800" x2="944" y2="800" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="840" x2="944" y2="840" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="880" x2="944" y2="880" stroke="white" stroke-width="1"/>
+    <line x1="80" y1="920" x2="944" y2="920" stroke="white" stroke-width="1"/>
+  </g>
+
+  <!-- Terminal border - beveled retro frame -->
+  <rect x="100" y="100" width="824" height="824" rx="40" fill="none" stroke="#333344" stroke-width="4"/>
+  <rect x="108" y="108" width="808" height="808" rx="36" fill="none" stroke="#222233" stroke-width="2"/>
+
+  <!-- ASCII waveform - center of screen -->
+  <!-- Glow layer -->
+  <g filter="url(#termglow)" opacity="0.4">
+    <text x="512" y="480" font-family="Courier, monospace" font-size="200" fill="#00ff88" text-anchor="middle" font-weight="bold">~=W=~</text>
+  </g>
+  <!-- Sharp layer -->
+  <text x="512" y="480" font-family="Courier, monospace" font-size="200" fill="#00ff88" text-anchor="middle" font-weight="bold">~=W=~</text>
+
+  <!-- "WHISPR" label below -->
+  <g filter="url(#termglow)" opacity="0.3">
+    <text x="512" y="620" font-family="Courier, monospace" font-size="90" fill="#00ff88" text-anchor="middle" letter-spacing="18">WHISPR</text>
+  </g>
+  <text x="512" y="620" font-family="Courier, monospace" font-size="90" fill="#00ff88" text-anchor="middle" letter-spacing="18">WHISPR</text>
+
+  <!-- Cursor blink -->
+  <rect x="760" y="580" width="14" height="50" fill="#00ff88" opacity="0.8"/>
+
+  <!-- Top status bar -->
+  <text x="140" y="170" font-family="Courier, monospace" font-size="36" fill="#00ff88" opacity="0.4">&gt; recording...</text>
+
+  <!-- Bottom status -->
+  <text x="140" y="870" font-family="Courier, monospace" font-size="30" fill="#00ff88" opacity="0.3">voice-to-text // v0.1</text>
+
+  <!-- Small audio wave bars across middle (ASCII style) -->
+  <g opacity="0.5">
+    <text x="512" y="740" font-family="Courier, monospace" font-size="48" fill="#00ff88" text-anchor="middle" opacity="0.4">|.|.|||||||..|||||||.|.</text>
+  </g>
+</svg>
