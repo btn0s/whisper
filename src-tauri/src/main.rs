@@ -53,7 +53,7 @@ fn main() {
         is_recording: Mutex::new(false),
     };
 
-    let toggle_shortcut = Shortcut::new(Some(Modifiers::META | Modifiers::SHIFT), Code::Space);
+    let toggle_shortcut = Shortcut::new(Some(Modifiers::ALT | Modifiers::SHIFT), Code::Space);
     let escape_shortcut = Shortcut::new(None, Code::Escape);
 
     tauri::Builder::default()
