@@ -85,10 +85,17 @@ fn main() {
     tauri::Builder::default()
         .manage(state)
         .setup(move |app| {
-            // Hide dock icon — menu bar only
+            // Check accessibility before hiding dock icon — the system prompt
+            // won't appear for Accessory (background) apps, so we must be Regular first
             #[cfg(target_os = "macos")]
             {
                 use tauri::ActivationPolicy;
+                if !paste::check_accessibility(false) {
+                    eprintln!("[whisper] Prompting for Accessibility permission...");
+                    paste::check_accessibility(true);
+                    // Give user time to grant permission before hiding dock icon
+                    std::thread::sleep(Duration::from_millis(500));
+                }
                 app.set_activation_policy(ActivationPolicy::Accessory);
             }
 

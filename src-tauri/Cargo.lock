@@ -4496,8 +4496,10 @@ name = "whisper"
 version = "0.2.0"
 dependencies = [
  "arboard",
+ "core-foundation",
  "core-graphics 0.24.0",
  "cpal",
+ "libc",
  "serde",
  "serde_json",
  "tauri",
