@@ -22,6 +22,27 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* Setup state — spinner while model downloads */
+#setup-spinner {
+  display: none;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-top-color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin: 0 6px;
+}
+
+#pill.setup #setup-spinner { display: block; }
+#pill.setup #cancel-btn,
+#pill.setup #stop-btn,
+#pill.setup #waveform { display: none; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Buttons */
 .btn {
   width: 18px;
