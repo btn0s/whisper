@@ -52,6 +52,13 @@ fn main() {
     tauri::Builder::default()
         .manage(state)
         .setup(move |app| {
+            // Hide dock icon — menu bar only
+            #[cfg(target_os = "macos")]
+            {
+                use tauri::ActivationPolicy;
+                app.set_activation_policy(ActivationPolicy::Accessory);
+            }
+
             // --- Tray Icon ---
             let quit = MenuItemBuilder::with_id("quit", "Quit whisper").build(app)?;
             let menu = MenuBuilder::new(app).items(&[&quit]).build()?;

@@ -52,7 +52,7 @@
       const raw = event.payload;
       // Compute overall audio energy
       const avg = raw.reduce((a, b) => a + b, 0) / raw.length;
-      const audioScale = Math.max(1, 1 + avg * 12);
+      const audioScale = Math.min(4, Math.max(1, 1 + avg * 12));
 
       bars.forEach((bar) => {
         bar.style.setProperty('--audio-scale', audioScale);
