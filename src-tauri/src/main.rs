@@ -60,11 +60,11 @@ fn main() {
         .manage(state)
         .setup(move |app| {
             // --- Tray Icon ---
-            let quit = MenuItemBuilder::with_id("quit", "Quit Whispr").build(app)?;
+            let quit = MenuItemBuilder::with_id("quit", "Quit whisper").build(app)?;
             let menu = MenuBuilder::new(app).items(&[&quit]).build()?;
 
             let _tray = TrayIconBuilder::with_id("whispr-tray")
-                .tooltip("Whispr — Voice to Text")
+                .tooltip("whisper — Voice to Text")
                 .menu(&menu)
                 .on_menu_event(|app, event| {
                     if event.id().as_ref() == "quit" {
@@ -105,7 +105,7 @@ fn main() {
                 stop_and_process(&app_handle_stop);
             });
 
-            eprintln!("[whispr] Ready. Option+Space to record, Escape to stop.");
+            eprintln!("[whisper] Ready. Option+Space to record, Escape to stop.");
 
             Ok(())
         })
@@ -124,20 +124,20 @@ fn toggle_recording(app: &tauri::AppHandle) {
     } else {
         let mut audio = state.audio.lock().unwrap();
         if let Err(e) = audio.0.start() {
-            eprintln!("[whispr] Failed to start recording: {}", e);
+            eprintln!("[whisper] Failed to start recording: {}", e);
             return;
         }
         *is_recording = true;
         play_sound("dictation-start.wav");
-        eprintln!("[whispr] Recording started");
+        eprintln!("[whisper] Recording started");
 
         // Register Escape shortcut only while recording (spawned to avoid main-thread deadlock)
         let app_clone = app.clone();
         std::thread::spawn(move || {
             let esc = Shortcut::new(None, Code::Escape);
             match app_clone.global_shortcut().register(esc) {
-                Ok(_) => eprintln!("[whispr] Escape shortcut registered"),
-                Err(e) => eprintln!("[whispr] Escape register failed: {}", e),
+                Ok(_) => eprintln!("[whisper] Escape shortcut registered"),
+                Err(e) => eprintln!("[whisper] Escape register failed: {}", e),
             }
         });
 
@@ -212,13 +212,13 @@ fn cancel_recording(app: &tauri::AppHandle) {
     std::thread::spawn(move || {
         let esc = Shortcut::new(None, Code::Escape);
         match app_clone.global_shortcut().unregister(esc) {
-            Ok(_) => eprintln!("[whispr] Escape shortcut unregistered"),
-            Err(e) => eprintln!("[whispr] Escape unregister failed: {}", e),
+            Ok(_) => eprintln!("[whisper] Escape shortcut unregistered"),
+            Err(e) => eprintln!("[whisper] Escape unregister failed: {}", e),
         }
     });
 
     play_sound("cancel.wav");
-    eprintln!("[whispr] Recording cancelled");
+    eprintln!("[whisper] Recording cancelled");
     hide_overlay(app);
 }
 
@@ -276,17 +276,17 @@ fn live_transcription_loop(app: &tauri::AppHandle, transcriber: &transcribe::Tra
             &snapshot
         };
 
-        eprintln!("[whispr] Live transcribing {} samples ({:.1}s)...",
+        eprintln!("[whisper] Live transcribing {} samples ({:.1}s)...",
             window.len(), window.len() as f64 / WHISPER_RATE as f64);
 
         match transcriber.transcribe(window) {
             Ok(text) if !text.is_empty() => {
-                eprintln!("[whispr] Live: \"{}\"", &text);
+                eprintln!("[whisper] Live: \"{}\"", &text);
                 let _ = app.emit("transcription-update", &text);
             }
-            Err(e) => eprintln!("[whispr] Live transcription error: {}", e),
+            Err(e) => eprintln!("[whisper] Live transcription error: {}", e),
             _ => {
-                eprintln!("[whispr] Live: (no speech detected)");
+                eprintln!("[whisper] Live: (no speech detected)");
             }
         }
     }
@@ -309,13 +309,13 @@ fn stop_and_process(app: &tauri::AppHandle) {
     std::thread::spawn(move || {
         let esc = Shortcut::new(None, Code::Escape);
         match app_clone.global_shortcut().unregister(esc) {
-            Ok(_) => eprintln!("[whispr] Escape shortcut unregistered"),
-            Err(e) => eprintln!("[whispr] Escape unregister failed: {}", e),
+            Ok(_) => eprintln!("[whisper] Escape shortcut unregistered"),
+            Err(e) => eprintln!("[whisper] Escape unregister failed: {}", e),
         }
     });
 
     play_sound("dictation-stop.wav");
-    eprintln!("[whispr] Recording stopped, processing...");
+    eprintln!("[whisper] Recording stopped, processing...");
     let _ = app.emit("recording-state", "processing");
 
     // Stop audio and get all samples
@@ -324,7 +324,7 @@ fn stop_and_process(app: &tauri::AppHandle) {
         audio.0.stop()
     };
 
-    eprintln!("[whispr] Got {} samples ({:.1}s) for final transcription",
+    eprintln!("[whisper] Got {} samples ({:.1}s) for final transcription",
         samples.len(), samples.len() as f64 / 16_000.0);
 
     let app_handle = app.clone();
@@ -337,16 +337,16 @@ fn stop_and_process(app: &tauri::AppHandle) {
         let raw_text = match transcriber.transcribe(&samples) {
             Ok(text) => text,
             Err(e) => {
-                eprintln!("[whispr] Transcription error: {}", e);
+                eprintln!("[whisper] Transcription error: {}", e);
                 hide_overlay(&app_handle);
                 return;
             }
         };
 
-        eprintln!("[whispr] Raw transcript: \"{}\"", &raw_text);
+        eprintln!("[whisper] Raw transcript: \"{}\"", &raw_text);
 
         if raw_text.is_empty() {
-            eprintln!("[whispr] Empty transcript, skipping");
+            eprintln!("[whisper] Empty transcript, skipping");
             hide_overlay(&app_handle);
             return;
         }
@@ -365,10 +365,10 @@ fn stop_and_process(app: &tauri::AppHandle) {
 
         play_sound("paste.wav");
         if let Err(e) = paste::paste_text(&raw_text) {
-            eprintln!("[whispr] Paste error: {}", e);
+            eprintln!("[whisper] Paste error: {}", e);
         }
 
-        eprintln!("[whispr] Done. Ready for next recording.");
+        eprintln!("[whisper] Done. Ready for next recording.");
     });
 }
 

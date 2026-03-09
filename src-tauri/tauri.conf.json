@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Whispr",
-  "version": "0.1.0",
-  "identifier": "com.whispr.app",
+  "productName": "whisper",
+  "version": "0.1.1",
+  "identifier": "com.whisper.dev",
   "build": {
     "beforeBuildCommand": "",
     "beforeDevCommand": "",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "overlay",
-        "title": "Whispr",
+        "title": "whisper",
         "url": "overlay.html",
         "width": 160,
         "height": 40,
