@@ -1,0 +1,10 @@
+{
+  "name": "whisper",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "cargo tauri dev",
+    "build": "CMAKE_OSX_DEPLOYMENT_TARGET=10.15 cargo tauri build",
+    "release": "pnpm build && gh release delete v$(node -p \"require('./package.json').version\") --yes 2>/dev/null; gh release create v$(node -p \"require('./package.json').version\") src-tauri/target/release/bundle/dmg/whisper_$(node -p \"require('./package.json').version\")_aarch64.dmg --title \"whisper v$(node -p \"require('./package.json').version\")\" --generate-notes"
+  }
+}
