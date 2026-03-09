@@ -91,8 +91,8 @@ fn main() {
                     .build(),
             )?;
 
+            // Only register toggle globally; Escape is registered/unregistered with recording
             app.global_shortcut().register(toggle_shortcut)?;
-            app.global_shortcut().register(escape_shortcut)?;
 
             // Listen for frontend button events
             let app_handle_cancel = app.handle().clone();
@@ -130,6 +130,16 @@ fn toggle_recording(app: &tauri::AppHandle) {
         *is_recording = true;
         play_sound("dictation-start.wav");
         eprintln!("[whispr] Recording started");
+
+        // Register Escape shortcut only while recording (spawned to avoid main-thread deadlock)
+        let app_clone = app.clone();
+        std::thread::spawn(move || {
+            let esc = Shortcut::new(None, Code::Escape);
+            match app_clone.global_shortcut().register(esc) {
+                Ok(_) => eprintln!("[whispr] Escape shortcut registered"),
+                Err(e) => eprintln!("[whispr] Escape register failed: {}", e),
+            }
+        });
 
         if let Some(window) = app.get_webview_window("overlay") {
             // Position bottom-center of primary monitor
@@ -196,6 +206,16 @@ fn cancel_recording(app: &tauri::AppHandle) {
     let mut audio = state.audio.lock().unwrap();
     audio.0.stop();
     drop(audio);
+
+    // Unregister Escape so it doesn't block other apps (spawned to avoid main-thread deadlock)
+    let app_clone = app.clone();
+    std::thread::spawn(move || {
+        let esc = Shortcut::new(None, Code::Escape);
+        match app_clone.global_shortcut().unregister(esc) {
+            Ok(_) => eprintln!("[whispr] Escape shortcut unregistered"),
+            Err(e) => eprintln!("[whispr] Escape unregister failed: {}", e),
+        }
+    });
 
     play_sound("cancel.wav");
     eprintln!("[whispr] Recording cancelled");
@@ -283,6 +303,16 @@ fn stop_and_process(app: &tauri::AppHandle) {
         }
         *is_recording = false;
     }
+
+    // Unregister Escape so it doesn't block other apps (spawned to avoid main-thread deadlock)
+    let app_clone = app.clone();
+    std::thread::spawn(move || {
+        let esc = Shortcut::new(None, Code::Escape);
+        match app_clone.global_shortcut().unregister(esc) {
+            Ok(_) => eprintln!("[whispr] Escape shortcut unregistered"),
+            Err(e) => eprintln!("[whispr] Escape unregister failed: {}", e),
+        }
+    });
 
     play_sound("dictation-stop.wav");
     eprintln!("[whispr] Recording stopped, processing...");
