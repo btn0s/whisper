@@ -17,6 +17,20 @@ use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut,
 
 const MODEL_URL: &str = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin";
 
+// Overlay window dimensions (logical pixels, scaled by monitor DPI)
+const OVERLAY_WIDTH: f64 = 160.0;
+const OVERLAY_HEIGHT: f64 = 40.0;
+const OVERLAY_BOTTOM_MARGIN: f64 = 60.0;
+
+// Timing constants
+const WEBVIEW_READY_DELAY_MS: u64 = 500;
+const MODEL_LOAD_DISPLAY_MS: u64 = 300;
+const AUDIO_LEVEL_INTERVAL_MS: u64 = 50;
+const LIVE_TRANSCRIPTION_INTERVAL_SECS: u64 = 3;
+const DISMISS_ANIMATION_MS: u64 = 120;
+const FOCUS_RETURN_BUFFER_MS: u64 = 100;
+const PASTE_FOCUS_DELAY_MS: u64 = DISMISS_ANIMATION_MS + FOCUS_RETURN_BUFFER_MS;
+
 /// Wrapper to make AudioCapture Send+Sync.
 struct SendSyncAudio(audio::AudioCapture);
 unsafe impl Send for SendSyncAudio {}
@@ -134,7 +148,7 @@ fn main() {
                 let app_handle = app.handle().clone();
                 std::thread::spawn(move || {
                     // Small delay so webview is ready to receive events
-                    std::thread::sleep(Duration::from_millis(500));
+                    std::thread::sleep(Duration::from_millis(WEBVIEW_READY_DELAY_MS));
                     let _ = app_handle.emit("model-download", "ready");
                 });
             } else {
@@ -143,10 +157,10 @@ fn main() {
                     if let Some(monitor) = window.primary_monitor().ok().flatten() {
                         let screen = monitor.size();
                         let scale = monitor.scale_factor();
-                        let win_w = (160.0 * scale) as i32;
-                        let win_h = (40.0 * scale) as i32;
+                        let win_w = (OVERLAY_WIDTH * scale) as i32;
+                        let win_h = (OVERLAY_HEIGHT * scale) as i32;
                         let x = (screen.width as i32 - win_w) / 2;
-                        let y = screen.height as i32 - win_h - (60.0 * scale) as i32;
+                        let y = screen.height as i32 - win_h - (OVERLAY_BOTTOM_MARGIN * scale) as i32;
                         let _ = window.set_position(PhysicalPosition::new(x, y));
                     }
                     let _ = window.show();
@@ -201,7 +215,7 @@ fn download_model(app: &tauri::AppHandle, model_path: &str) {
                     *state.model_ready.lock().unwrap() = true;
                     eprintln!("[whisper] Model loaded and ready");
                     let _ = app.emit("model-download", "ready");
-                    std::thread::sleep(Duration::from_millis(300));
+                    std::thread::sleep(Duration::from_millis(MODEL_LOAD_DISPLAY_MS));
                     hide_overlay(app);
                 }
                 Err(e) => {
@@ -347,7 +361,7 @@ fn cancel_recording(app: &tauri::AppHandle) {
 
 fn audio_level_loop(app: &tauri::AppHandle) {
     loop {
-        std::thread::sleep(Duration::from_millis(50)); // 20fps
+        std::thread::sleep(Duration::from_millis(AUDIO_LEVEL_INTERVAL_MS));
 
         let state = app.state::<AppState>();
         let state = state.inner();
@@ -374,7 +388,7 @@ fn live_transcription_loop(
     const WINDOW_SAMPLES: usize = WHISPER_RATE * WINDOW_SECS;
 
     loop {
-        std::thread::sleep(Duration::from_secs(3));
+        std::thread::sleep(Duration::from_secs(LIVE_TRANSCRIPTION_INTERVAL_SECS));
 
         let state = app.state::<AppState>();
         let state = state.inner();
@@ -491,7 +505,8 @@ fn stop_and_process(app: &tauri::AppHandle) {
 
         // Hide overlay first so focus returns to the user's app
         hide_overlay(&app_handle);
-        tokio::time::sleep(Duration::from_millis(100)).await;
+        // Wait for exit animation (120ms) + window hide + focus return
+        tokio::time::sleep(Duration::from_millis(PASTE_FOCUS_DELAY_MS)).await;
 
         play_sound("paste.wav");
         if let Err(e) = paste::paste_text(&raw_text) {
