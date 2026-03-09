@@ -41,9 +41,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "macOS": {
-      "infoPlist": "<key>LSUIElement</key><true/>"
-    }
+    "macOS": {}
   },
   "plugins": {}
 }
