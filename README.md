@@ -1,36 +1,45 @@
-# Whispr
+# whisper
 
-Local voice-to-text for macOS. Press a hotkey, speak, get clean text pasted into any app.
+Local, on-device voice-to-text for macOS. Press a hotkey, speak, get text pasted into any app.
 
-Uses Whisper (local) for speech-to-text and Qwen via Ollama (local) for transcript cleanup.
+Uses [whisper.cpp](https://github.com/ggerganov/whisper.cpp) for fully local speech-to-text — no network requests, no cloud APIs.
 
-## Prerequisites
+## Install
+
+1. Download the latest `.dmg` from [Releases](https://github.com/btn0s/whisper/releases)
+2. Open the DMG and drag whisper to Applications
+3. Download a Whisper model:
+   ```bash
+   mkdir -p ~/.whisper && curl -L -o ~/.whisper/ggml-base.en.bin \
+     https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin
+   ```
+4. Grant microphone and accessibility permissions when prompted
+
+## Usage
+
+- **Option+Space** — Toggle recording (press to start, press again to stop and paste)
+- **Escape** — Cancel recording (only captured while recording)
+- Lives in the menubar tray
+
+## Dev
+
+### Prerequisites
 
 - Rust / Cargo
 - CMake (for whisper.cpp compilation)
-- Ollama (https://ollama.com)
 
-## Setup
-
-```bash
-chmod +x setup.sh && ./setup.sh
-```
-
-This downloads the Whisper model and pulls Qwen via Ollama.
-
-## Run
+### Run
 
 ```bash
 cargo tauri dev
 ```
 
-## Usage
+### Build
 
-- **Cmd+Shift+Space** — Start recording
-- **Escape** — Stop recording, process, and paste result
-- Lives in the menubar tray
+```bash
+CMAKE_OSX_DEPLOYMENT_TARGET=10.15 cargo tauri build
+```
 
-## Config (env vars)
+## Config
 
-- `WHISPR_MODEL` — Path to Whisper .bin model (default: `~/.whispr/ggml-base.en.bin`)
-- `WHISPR_LLM_MODEL` — Ollama model name (default: `qwen3.5`)
+- `WHISPER_MODEL` — Path to Whisper `.bin` model (default: `~/.whisper/ggml-base.en.bin`)

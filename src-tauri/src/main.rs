@@ -1,8 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod audio;
-mod context;
-mod llm;
 mod paste;
 mod transcribe;
 
@@ -25,22 +23,18 @@ unsafe impl Sync for SendSyncAudio {}
 struct AppState {
     audio: Mutex<SendSyncAudio>,
     transcriber: Arc<transcribe::Transcriber>,
-    llm: llm::LlmClient,
     is_recording: Mutex<bool>,
 }
 
 fn main() {
-    let model_path = std::env::var("WHISPR_MODEL").unwrap_or_else(|_| {
+    let model_path = std::env::var("WHISPER_MODEL").unwrap_or_else(|_| {
         let home = std::env::var("HOME").unwrap_or_default();
-        format!("{}/.whispr/ggml-base.en.bin", home)
+        format!("{}/.whisper/ggml-base.en.bin", home)
     });
-
-    let qwen_model =
-        std::env::var("WHISPR_LLM_MODEL").unwrap_or_else(|_| "qwen3.5".to_string());
 
     let transcriber = Arc::new(
         transcribe::Transcriber::new(&model_path).expect(
-            "Failed to load Whisper model. Set WHISPR_MODEL env var or place model at ~/.whispr/ggml-base.en.bin",
+            "Failed to load Whisper model. Set WHISPER_MODEL env var or place model at ~/.whisper/ggml-base.en.bin",
         ),
     );
 
@@ -49,7 +43,6 @@ fn main() {
     let state = AppState {
         audio: Mutex::new(SendSyncAudio(audio_capture)),
         transcriber,
-        llm: llm::LlmClient::new(&qwen_model),
         is_recording: Mutex::new(false),
     };
 
@@ -63,7 +56,7 @@ fn main() {
             let quit = MenuItemBuilder::with_id("quit", "Quit whisper").build(app)?;
             let menu = MenuBuilder::new(app).items(&[&quit]).build()?;
 
-            let _tray = TrayIconBuilder::with_id("whispr-tray")
+            let _tray = TrayIconBuilder::with_id("whisper-tray")
                 .tooltip("whisper — Voice to Text")
                 .menu(&menu)
                 .on_menu_event(|app, event| {
@@ -110,7 +103,7 @@ fn main() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running whispr");
+        .expect("error while running whisper");
 }
 
 fn toggle_recording(app: &tauri::AppHandle) {
@@ -330,9 +323,6 @@ fn stop_and_process(app: &tauri::AppHandle) {
     let app_handle = app.clone();
     let transcriber = state.transcriber.clone();
     tauri::async_runtime::spawn(async move {
-        let state = app_handle.state::<AppState>();
-        let state = state.inner();
-
         // Final transcription
         let raw_text = match transcriber.transcribe(&samples) {
             Ok(text) => text,
@@ -352,12 +342,6 @@ fn stop_and_process(app: &tauri::AppHandle) {
         }
 
         let _ = app_handle.emit("transcription-update", &raw_text);
-
-        // TODO: LLM reformatting via Ollama (disabled for now)
-        // let file_context = context::detect_project_root()
-        //     .and_then(|root| context::collect_file_tree(&root));
-        // let final_text = state.llm.reformat(&raw_text, file_context.as_deref()).await
-        //     .unwrap_or(raw_text);
 
         // Hide overlay first so focus returns to the user's app
         hide_overlay(&app_handle);

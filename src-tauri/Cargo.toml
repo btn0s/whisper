@@ -1,6 +1,6 @@
 [package]
-name = "whispr"
-version = "0.1.0"
+name = "whisper"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
@@ -8,11 +8,10 @@ tauri = { version = "2", features = ["macos-private-api", "tray-icon", "image-pn
 tauri-plugin-global-shortcut = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-reqwest = { version = "0.12", features = ["json"] }
 whisper-rs = "0.15"
 cpal = "0.15"
 core-graphics = "0.24"
-tokio = { version = "1", features = ["sync"] }
+tokio = { version = "1", features = ["sync", "time"] }
 arboard = "3"
 
 [build-dependencies]
