@@ -10,20 +10,11 @@ pub struct AudioCapture {
 
 impl AudioCapture {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let host = cpal::default_host();
-        let device = host
-            .default_input_device()
-            .ok_or("No input device available")?;
-
-        let config = device.default_input_config()?;
-        let sample_rate = config.sample_rate().0;
-        let channels = config.channels();
-
         Ok(Self {
             stream: None,
             samples: Arc::new(Mutex::new(Vec::new())),
-            sample_rate,
-            channels,
+            sample_rate: 48000,
+            channels: 1,
         })
     }
 

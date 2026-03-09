@@ -41,7 +41,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "macOS": {},
+    "macOS": {
+      "infoPlist": "Info.plist"
+    },
     "resources": ["sounds/*"]
   },
   "plugins": {}
