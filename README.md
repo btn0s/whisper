@@ -6,14 +6,13 @@ Uses [whisper.cpp](https://github.com/ggerganov/whisper.cpp) for fully local spe
 
 ## Install
 
-1. Download the latest `.dmg` from [Releases](https://github.com/btn0s/whisper/releases)
-2. Open the DMG and drag whisper to Applications
-3. Download a Whisper model:
-   ```bash
-   mkdir -p ~/.whisper && curl -L -o ~/.whisper/ggml-base.en.bin \
-     https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin
-   ```
-4. Grant microphone and accessibility permissions when prompted
+```bash
+curl -sL https://raw.githubusercontent.com/btn0s/whisper/main/install.sh | bash
+```
+
+This downloads the app to `/Applications`, and fetches the Whisper model (~142MB) to `~/.whisper/`.
+
+On first launch, grant microphone and accessibility permissions when prompted.
 
 ## Usage
 
