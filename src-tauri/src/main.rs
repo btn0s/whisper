@@ -124,6 +124,11 @@ fn main() {
                 stop_and_process(&app_handle_stop);
             });
 
+            let app_handle_hide = app.handle().clone();
+            app.listen("overlay-hidden", move |_| {
+                actually_hide_overlay(&app_handle_hide);
+            });
+
             if model_exists {
                 // Model already loaded — tell frontend to remove setup spinner
                 let app_handle = app.handle().clone();
@@ -492,9 +497,14 @@ fn stop_and_process(app: &tauri::AppHandle) {
 }
 
 fn hide_overlay(app: &tauri::AppHandle) {
+    let _ = app.emit("recording-state", "idle");
+    let _ = app.emit("transcription-update", "");
+    // Trigger exit animation, frontend will emit 'overlay-hidden' when done
+    let _ = app.emit("pill-dismiss", ());
+}
+
+fn actually_hide_overlay(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
         let _ = window.hide();
     }
-    let _ = app.emit("recording-state", "idle");
-    let _ = app.emit("transcription-update", "");
 }

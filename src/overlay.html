@@ -18,6 +18,7 @@
   </div>
   <script>
     const { listen, emit } = window.__TAURI__.event;
+    const pill = document.getElementById('pill');
 
     const NUM_BARS = 10;
     const waveform = document.getElementById('waveform');
@@ -51,10 +52,8 @@
 
     listen('audio-levels', (event) => {
       const raw = event.payload;
-      // Compute overall audio energy
       const avg = raw.reduce((a, b) => a + b, 0) / raw.length;
       const audioScale = Math.min(4, Math.max(1, 1 + avg * 12));
-
       bars.forEach((bar) => {
         bar.style.setProperty('--audio-scale', audioScale);
       });
@@ -62,11 +61,27 @@
 
     listen('recording-state', (event) => {
       const state = event.payload;
+      if (state === 'recording') {
+        // Entrance animation
+        pill.classList.remove('setup', 'dismiss');
+        pill.classList.add('enter');
+      }
       bars.forEach(bar => {
         bar.classList.toggle('active', state === 'recording');
         bar.classList.toggle('wave', state === 'recording');
         bar.classList.toggle('processing', state === 'processing');
       });
+    });
+
+    // Exit animation — shrink back down, then tell backend to hide window
+    listen('pill-dismiss', () => {
+      pill.classList.remove('enter');
+      pill.classList.add('dismiss');
+      setTimeout(() => {
+        pill.classList.remove('dismiss');
+        pill.classList.add('setup'); // Reset to compact state for next show
+        emit('overlay-hidden');
+      }, 120);
     });
 
     listen('model-download', (event) => {
