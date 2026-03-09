@@ -41,7 +41,8 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "macOS": {}
+    "macOS": {},
+    "resources": ["sounds/*"]
   },
   "plugins": {}
 }

@@ -289,12 +289,18 @@ fn toggle_recording(app: &tauri::AppHandle) {
 }
 
 fn sounds_dir() -> PathBuf {
-    // In dev: src-tauri/sounds/, in prod: bundled resource
     let exe = std::env::current_exe().unwrap_or_default();
+    // Dev: src-tauri/sounds/
     let dev_path = exe.parent().unwrap_or(std::path::Path::new("."))
         .join("../../../src-tauri/sounds");
     if dev_path.exists() {
         return dev_path;
+    }
+    // Prod: macOS app bundle Resources/sounds/
+    let resources_path = exe.parent().unwrap_or(std::path::Path::new("."))
+        .join("../Resources/sounds");
+    if resources_path.exists() {
+        return resources_path;
     }
     exe.parent().unwrap_or(std::path::Path::new(".")).join("sounds")
 }
